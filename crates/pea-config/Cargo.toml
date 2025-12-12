@@ -20,13 +20,14 @@ serde = { version = "1.0", features = ["derive"] }
 
 # Path handling
 camino = "1.1"
+dirs = "5.0"
 
 # Error handling
 thiserror = "1.0"
 anyhow = "1.0"
 
 # Async runtime
-tokio = { version = "1.0", features = ["fs", "io-util"] }
+tokio = { version = "1.0", features = ["fs", "io-util", "macros"] }
 
 # Property testing
 proptest = { version = "1.0", optional = true }

@@ -3,8 +3,8 @@ resolver = "2"
 members = [
     "crates/pea-core",
     "crates/pea-cli",
+    "crates/pea-config",
     # TODO: Add other crates as they are implemented
-    # "crates/pea-config",
     # "crates/pea-registry",
     # "crates/pea-resolver",
     # "crates/pea-cache",

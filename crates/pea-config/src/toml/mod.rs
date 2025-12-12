@@ -1,6 +1,7 @@
 //! pea.toml configuration parsing and serialization
 
 use std::collections::HashMap;
+use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 use pea_core::types::{Version, VersionReq};
 use pea_core::error::PeaError;
@@ -52,6 +53,7 @@ pub struct PackageSection {
     pub name: String,
     
     /// Package version (required)
+    #[serde(deserialize_with = "deserialize_version", serialize_with = "serialize_version")]
     pub version: Version,
     
     /// Package description
@@ -183,13 +185,19 @@ impl DependencySpec {
     pub fn version_req(&self) -> ConfigResult<Option<VersionReq>> {
         match self {
             DependencySpec::Simple(version) => {
-                let req = version.parse()
-                    .map_err(|e| PeaError::ConfigValidation(format!("Invalid version requirement '{}': {}", version, e)))?;
+                let req = VersionReq::parse(version)
+                    .map_err(|e| PeaError::ConfigValidation {
+                        field: "version".to_string(),
+                        reason: format!("Invalid version requirement '{}': {}", version, e),
+                    })?;
                 Ok(Some(req))
             }
             DependencySpec::Detailed { version: Some(version), .. } => {
-                let req = version.parse()
-                    .map_err(|e| PeaError::ConfigValidation(format!("Invalid version requirement '{}': {}", version, e)))?;
+                let req = VersionReq::parse(version)
+                    .map_err(|e| PeaError::ConfigValidation {
+                        field: "version".to_string(),
+                        reason: format!("Invalid version requirement '{}': {}", version, e),
+                    })?;
                 Ok(Some(req))
             }
             DependencySpec::Detailed { version: None, .. } => Ok(None),
@@ -215,12 +223,20 @@ impl DependencySpec {
 /// Parse TOML string to PeaToml configuration
 pub fn parse_pea_toml(content: &str) -> ConfigResult<PeaToml> {
     // First try with toml_edit for better error reporting
-    let document = content.parse::<toml_edit::DocumentMut>()
-        .map_err(|e| PeaError::TomlParse(format!("TOML syntax error: {}", e)))?;
+    let _document = content.parse::<toml_edit::DocumentMut>()
+        .map_err(|e| PeaError::TomlParse {
+            message: format!("TOML syntax error: {}", e),
+            line: 0,
+            column: 0,
+        })?;
     
     // Then parse with serde for type safety
     let config: PeaToml = toml::from_str(content)
-        .map_err(|e| PeaError::TomlParse(format!("TOML parsing error: {}", e)))?;
+        .map_err(|e| PeaError::TomlParse {
+            message: format!("TOML parsing error: {}", e),
+            line: 0,
+            column: 0,
+        })?;
     
     // Validate required fields
     validate_config(&config)?;
@@ -231,23 +247,29 @@ pub fn parse_pea_toml(content: &str) -> ConfigResult<PeaToml> {
 /// Serialize PeaToml to TOML string
 pub fn serialize_pea_toml(config: &PeaToml) -> ConfigResult<String> {
     toml::to_string_pretty(config)
-        .map_err(|e| PeaError::TomlParse(format!("TOML serialization error: {}", e)))
+        .map_err(|e| PeaError::TomlParse {
+            message: format!("TOML serialization error: {}", e),
+            line: 0,
+            column: 0,
+        })
 }
 
 /// Validate configuration completeness
 pub fn validate_config(config: &PeaToml) -> ConfigResult<()> {
     // Validate package name
     if config.package.name.is_empty() {
-        return Err(PeaError::ConfigValidation(
-            "Package name is required in [package] section".to_string()
-        ));
+        return Err(PeaError::ConfigValidation {
+            field: "package.name".to_string(),
+            reason: "Package name is required in [package] section".to_string(),
+        });
     }
     
     // Validate package name format (npm-compatible)
     if !is_valid_package_name(&config.package.name) {
-        return Err(PeaError::ConfigValidation(
-            format!("Invalid package name '{}'. Package names must be lowercase, alphanumeric, and may contain hyphens or underscores", config.package.name)
-        ));
+        return Err(PeaError::ConfigValidation {
+            field: "package.name".to_string(),
+            reason: format!("Invalid package name '{}'. Package names must be lowercase, alphanumeric, and may contain hyphens or underscores", config.package.name),
+        });
     }
     
     // Validate dependency specifications
@@ -270,9 +292,10 @@ pub fn validate_config(config: &PeaToml) -> ConfigResult<()> {
     // Validate workspace configuration
     if let Some(workspace) = &config.workspace {
         if workspace.members.is_empty() {
-            return Err(PeaError::ConfigValidation(
-                "Workspace must have at least one member".to_string()
-            ));
+            return Err(PeaError::ConfigValidation {
+                field: "workspace.members".to_string(),
+                reason: "Workspace must have at least one member".to_string(),
+            });
         }
     }
     
@@ -282,12 +305,19 @@ pub fn validate_config(config: &PeaToml) -> ConfigResult<()> {
 /// Load and parse pea.toml from file path
 pub async fn load_from_file(path: &camino::Utf8Path) -> ConfigResult<PeaToml> {
     let content = tokio::fs::read_to_string(path).await
-        .map_err(|e| PeaError::Io(format!("Failed to read {}: {}", path, e)))?;
+        .map_err(|e| PeaError::io(format!("Failed to read {}", path), e))?;
     
     parse_pea_toml(&content)
         .map_err(|e| match e {
-            PeaError::TomlParse(msg) => PeaError::TomlParse(format!("In file {}: {}", path, msg)),
-            PeaError::ConfigValidation(msg) => PeaError::ConfigValidation(format!("In file {}: {}", path, msg)),
+            PeaError::TomlParse { message, line, column } => PeaError::TomlParse {
+                message: format!("In file {}: {}", path, message),
+                line,
+                column,
+            },
+            PeaError::ConfigValidation { field, reason } => PeaError::ConfigValidation {
+                field,
+                reason: format!("In file {}: {}", path, reason),
+            },
             other => other,
         })
 }
@@ -296,9 +326,10 @@ pub async fn load_from_file(path: &camino::Utf8Path) -> ConfigResult<PeaToml> {
 fn validate_dependency_spec(name: &str, spec: &DependencySpec) -> ConfigResult<()> {
     // Validate dependency name
     if !is_valid_package_name(name) {
-        return Err(PeaError::ConfigValidation(
-            format!("Invalid dependency name '{}'. Package names must be lowercase, alphanumeric, and may contain hyphens or underscores", name)
-        ));
+        return Err(PeaError::ConfigValidation {
+            field: format!("dependencies.{}", name),
+            reason: format!("Invalid dependency name '{}'. Package names must be lowercase, alphanumeric, and may contain hyphens or underscores", name),
+        });
     }
     
     // Validate version requirement if present
@@ -317,15 +348,17 @@ fn validate_dependency_spec(name: &str, spec: &DependencySpec) -> ConfigResult<(
             let source_count = [version.is_some(), git.is_some(), path.is_some(), workspace.unwrap_or(false)].iter().filter(|&&x| x).count();
             
             if source_count == 0 {
-                return Err(PeaError::ConfigValidation(
-                    format!("Dependency '{}' must specify at least one source (version, git, path, or workspace)", name)
-                ));
+                return Err(PeaError::ConfigValidation {
+                    field: format!("dependencies.{}", name),
+                    reason: format!("Dependency '{}' must specify at least one source (version, git, path, or workspace)", name),
+                });
             }
             
             if source_count > 1 {
-                return Err(PeaError::ConfigValidation(
-                    format!("Dependency '{}' can only specify one source (version, git, path, or workspace)", name)
-                ));
+                return Err(PeaError::ConfigValidation {
+                    field: format!("dependencies.{}", name),
+                    reason: format!("Dependency '{}' can only specify one source (version, git, path, or workspace)", name),
+                });
             }
         }
     }
@@ -454,4 +487,99 @@ lodash = "^4.17.21"
         assert!(!is_valid_package_name("_invalid"));
         assert!(!is_valid_package_name("invalid space"));
     }
+}
+
+#[cfg(all(test, feature = "property-tests"))]
+mod property_tests {
+    use super::*;
+    use proptest::prelude::*;
+    use pea_core::types::Version;
+    
+    // Property test generators
+    prop_compose! {
+        fn arb_version()(major in 0u64..100, minor in 0u64..100, patch in 0u64..100) -> Version {
+            Version::new(major, minor, patch)
+        }
+    }
+    
+    prop_compose! {
+        fn arb_package_section()(
+            name in "[a-z][a-z0-9-]{0,20}",
+            version in arb_version(),
+            description in prop::option::of("[a-zA-Z0-9 ]{0,100}"),
+        ) -> PackageSection {
+            PackageSection {
+                name,
+                version,
+                description,
+                main: None,
+                license: None,
+                repository: None,
+                keywords: Vec::new(),
+                authors: Vec::new(),
+                homepage: None,
+            }
+        }
+    }
+    
+    prop_compose! {
+        fn arb_dependency_spec()(
+            major in 0u64..100,
+            minor in 0u64..100,
+            patch in 0u64..100,
+        ) -> DependencySpec {
+            DependencySpec::Simple(format!("^{}.{}.{}", major, minor, patch))
+        }
+    }
+    
+    prop_compose! {
+        fn arb_pea_toml()(
+            package in arb_package_section(),
+            deps in prop::collection::hash_map("[a-z][a-z0-9-]{0,10}", arb_dependency_spec(), 0..5),
+        ) -> PeaToml {
+            PeaToml {
+                package,
+                dependencies: deps,
+                dev_dependencies: HashMap::new(),
+                peer_dependencies: HashMap::new(),
+                optional_dependencies: HashMap::new(),
+                scripts: HashMap::new(),
+                features: HashMap::new(),
+                workspace: None,
+                profile: HashMap::new(),
+            }
+        }
+    }
+    
+    proptest! {
+        /// Property 1: TOML Configuration Round-Trip
+        /// Test serialize(parse(serialize(config))) == serialize(config)
+        #[test]
+        fn toml_round_trip(config in arb_pea_toml()) {
+            let serialized1 = serialize_pea_toml(&config).unwrap();
+            let parsed = parse_pea_toml(&serialized1).unwrap();
+            let serialized2 = serialize_pea_toml(&parsed).unwrap();
+            
+            // Parse both serialized versions to compare semantically
+            let config1 = parse_pea_toml(&serialized1).unwrap();
+            let config2 = parse_pea_toml(&serialized2).unwrap();
+            
+            prop_assert_eq!(config1, config2);
+        }
+    }
+}
+/// Custom deserializer for Version from string
+fn deserialize_version<'de, D>(deserializer: D) -> Result<Version, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    Version::from_str(&s).map_err(serde::de::Error::custom)
+}
+/// Custom serializer for Version to string
+fn serialize_version<S>(version: &Version, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_str(&version.to_string())
 }

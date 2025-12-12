@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 0e6bec6a591f48dbbd412b00e12d022c08d42e76649b9987df58a9f2d5c48866 # shrinks to config = PeaToml { package: PackageSection { name: "a", version: Version { major: 0, minor: 0, patch: 0, prerelease: None, build: None }, description: None, main: None, license: None, repository: None, keywords: [], authors: [], homepage: None }, dependencies: {"a": Simple("^0.0.20000000000000000000")}, dev_dependencies: {}, peer_dependencies: {}, optional_dependencies: {}, scripts: {}, features: {}, workspace: None, profile: {} }
