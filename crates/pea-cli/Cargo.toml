@@ -1,0 +1,48 @@
+[package]
+name = "pea-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Blazingly fast JavaScript/TypeScript runtime and package manager CLI"
+license = "MIT"
+
+[[bin]]
+name = "pea"
+path = "src/main.rs"
+
+[dependencies]
+# Core types
+pea-core = { path = "../pea-core" }
+
+# CLI framework
+clap = { workspace = true }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# File system
+walkdir = { workspace = true }
+
+# Path handling
+camino = { workspace = true }
+
+# Build dependencies
+[build-dependencies]
+chrono = "0.4"
+
+# Development dependencies
+[dev-dependencies]
+proptest = { workspace = true }
+tempfile = "3.8"
+tokio-test = "0.4"
