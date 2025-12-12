@@ -1,0 +1,36 @@
+# Pea Rust Formatting Configuration
+# Enforces consistent code style across all crates
+
+edition = "2021"
+max_width = 100
+tab_spaces = 4
+newline_style = "Unix"
+use_small_heuristics = "Default"
+
+# Imports
+imports_granularity = "Module"
+group_imports = "StdExternalCrate"
+reorder_imports = true
+reorder_modules = true
+
+# Comments
+wrap_comments = true
+comment_width = 80
+normalize_comments = true
+
+# Functions
+fn_single_line = false
+fn_params_layout = "Tall"
+
+# Structs & Enums
+struct_lit_single_line = true
+enum_discrim_align_threshold = 20
+
+# Control Flow
+match_block_trailing_comma = true
+match_arm_blocks = true
+
+# Misc
+use_field_init_shorthand = true
+use_try_shorthand = true
+force_multiline_blocks = false

@@ -1,0 +1,21 @@
+[package]
+name = "pea-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core types and utilities for Pea runtime"
+license = "MIT"
+
+[dependencies]
+# Serialization
+rkyv = { workspace = true }
+serde = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Hashing
+blake3 = { workspace = true }
+
+# Development dependencies
+[dev-dependencies]
+proptest = { workspace = true }
