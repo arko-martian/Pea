@@ -19,3 +19,5 @@ blake3 = { workspace = true }
 # Development dependencies
 [dev-dependencies]
 proptest = { workspace = true }
+criterion = { workspace = true }
+tempfile = { workspace = true }

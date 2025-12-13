@@ -36,6 +36,7 @@ proptest = { version = "1.0", optional = true }
 proptest = "1.0"
 tokio-test = "0.4"
 tempfile = "3.0"
+criterion = { workspace = true }
 
 [features]
 default = []

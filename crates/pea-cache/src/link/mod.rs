@@ -13,4 +13,4 @@ use crate::CacheResult;
 pub mod linker;
 
 // Re-export main types
-pub use linker::Linker;
+pub use linker::{Linker, LinkResult, PackageInfo, NodeModulesResult, CleanupResult};

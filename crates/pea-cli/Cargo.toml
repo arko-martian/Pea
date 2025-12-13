@@ -12,6 +12,10 @@ path = "src/main.rs"
 [dependencies]
 # Core types
 pea-core = { path = "../pea-core" }
+pea-config = { path = "../pea-config" }
+pea-registry = { path = "../pea-registry" }
+pea-resolver = { path = "../pea-resolver" }
+pea-cache = { path = "../pea-cache" }
 
 # CLI framework
 clap = { workspace = true }
@@ -37,6 +41,12 @@ walkdir = { workspace = true }
 # Path handling
 camino = { workspace = true }
 
+# Temporary directories
+tempfile = { workspace = true }
+
+# Home directory detection
+dirs = "5.0"
+
 # Build dependencies
 [build-dependencies]
 chrono = "0.4"
@@ -46,3 +56,28 @@ chrono = "0.4"
 proptest = { workspace = true }
 tempfile = "3.8"
 tokio-test = "0.4"
+criterion = { workspace = true }
+sha1 = { workspace = true }
+sha2 = { workspace = true }
+rayon = { workspace = true }
+
+# Benchmark configuration
+[[bench]]
+name = "install"
+harness = false
+path = "../../benches/install.rs"
+
+[[bench]]
+name = "resolve"
+harness = false
+path = "../../benches/resolve.rs"
+
+[[bench]]
+name = "parse"
+harness = false
+path = "../../benches/parse.rs"
+
+[[bench]]
+name = "hash"
+harness = false
+path = "../../benches/hash.rs"

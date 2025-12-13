@@ -7,6 +7,7 @@ members = [
     "crates/pea-registry",
     "crates/pea-resolver",
     "crates/pea-cache",
+    "crates/pea-benchmarks",
     # TODO: Add other crates as they are implemented
     # "crates/pea-lockfile",
     # "crates/pea-runtime",
@@ -45,6 +46,8 @@ rkyv = { version = "0.7", features = ["validation"] }
 blake3 = "1.5"
 ring = "0.17"
 hex = "0.4"
+sha1 = "0.10"
+sha2 = "0.10"
 
 # CLI
 clap = { version = "4.4", features = ["derive", "env"] }
@@ -93,6 +96,10 @@ wasmtime = "16.0"
 # Testing
 proptest = "1.4"
 criterion = "0.5"
+tempfile = "3.8"
+
+# Profiling
+pprof = { version = "0.13", features = ["flamegraph", "criterion"] }
 
 # Time handling
 chrono = { version = "0.4", features = ["serde"] }

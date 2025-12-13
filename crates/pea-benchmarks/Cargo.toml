@@ -1,0 +1,44 @@
+[package]
+name = "pea-benchmarks"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+# Core pea crates
+pea-cache = { path = "../pea-cache" }
+pea-config = { path = "../pea-config" }
+pea-core = { path = "../pea-core" }
+pea-registry = { path = "../pea-registry" }
+pea-resolver = { path = "../pea-resolver" }
+
+# Benchmarking
+criterion = { workspace = true, features = ["html_reports"] }
+pprof = { workspace = true }
+
+# Utilities
+tempfile = { workspace = true }
+camino = { workspace = true }
+rayon = { workspace = true }
+sha1 = { workspace = true }
+sha2 = { workspace = true }
+serde_json = { workspace = true }
+
+[[bench]]
+name = "install"
+harness = false
+
+[[bench]]
+name = "resolve"
+harness = false
+
+[[bench]]
+name = "hash"
+harness = false
+
+[[bench]]
+name = "parse"
+harness = false
