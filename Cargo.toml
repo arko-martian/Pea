@@ -6,10 +6,8 @@ members = [
     "crates/pea-config",
     "crates/pea-registry",
     "crates/pea-resolver",
+    "crates/pea-cache",
     # TODO: Add other crates as they are implemented
-    # "crates/pea-registry",
-    # "crates/pea-resolver",
-    # "crates/pea-cache",
     # "crates/pea-lockfile",
     # "crates/pea-runtime",
     # "crates/pea-parser",
@@ -95,6 +93,9 @@ wasmtime = "16.0"
 # Testing
 proptest = "1.4"
 criterion = "0.5"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
 
 # Misc
 once_cell = "1.19"

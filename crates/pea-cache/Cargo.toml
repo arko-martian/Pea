@@ -1,0 +1,45 @@
+[package]
+name = "pea-cache"
+version = "0.1.0"
+edition = "2021"
+description = "Content-addressable storage for Pea package manager"
+
+[dependencies]
+# Core dependencies
+pea-core = { path = "../pea-core" }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Serialization
+rkyv = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Hashing and crypto
+blake3 = "1.5"
+hex = { workspace = true }
+
+# File system operations
+flate2 = "1.0"
+tar = "0.4"
+
+# Parallel processing
+rayon = { workspace = true }
+
+# Path handling
+camino = { workspace = true }
+walkdir = { workspace = true }
+
+# Error handling
+thiserror = { workspace = true }
+
+# Collections
+dashmap = { workspace = true }
+
+# Time handling
+chrono = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.8"
+proptest = { workspace = true }
