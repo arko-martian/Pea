@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 118ad2a18ce908fa552c57c31314eb51467a9e2804998de04a33413e6b6f7768 # shrinks to num_packages = 2, constraints = [("aaa", Some("1.0.1"))]

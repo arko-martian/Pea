@@ -4,6 +4,8 @@ members = [
     "crates/pea-core",
     "crates/pea-cli",
     "crates/pea-config",
+    "crates/pea-registry",
+    "crates/pea-resolver",
     # TODO: Add other crates as they are implemented
     # "crates/pea-registry",
     # "crates/pea-resolver",

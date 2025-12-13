@@ -12,7 +12,7 @@ use thiserror::Error;
 
 /// Semantic version (major.minor.patch-prerelease+build)
 #[derive(
-    Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize, SerdeDeserialize, SerdeSerialize,
+    Debug, Clone, PartialEq, Eq, Hash, Archive, Deserialize, Serialize, SerdeDeserialize, SerdeSerialize,
 )]
 #[archive(check_bytes)]
 pub struct Version {
@@ -24,21 +24,21 @@ pub struct Version {
 }
 
 /// Version requirement (^1.0.0, ~2.3.0, >=1.0.0 <2.0.0)
-#[derive(Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize, SerdeDeserialize, SerdeSerialize)]
 #[archive(check_bytes)]
 pub struct VersionReq {
     pub comparators: Vec<Comparator>,
 }
 
 /// Individual version comparator
-#[derive(Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize, SerdeDeserialize, SerdeSerialize)]
 pub struct Comparator {
     pub op: Op,
     pub version: PartialVersion,
 }
 
 /// Comparison operator for version requirements
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Archive, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Archive, Deserialize, Serialize, SerdeDeserialize, SerdeSerialize)]
 pub enum Op {
     Exact,     // =1.0.0
     Greater,   // >1.0.0
@@ -51,7 +51,7 @@ pub enum Op {
 }
 
 /// Partial version for comparisons (may have missing components)
-#[derive(Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Archive, Deserialize, Serialize, SerdeDeserialize, SerdeSerialize)]
 pub struct PartialVersion {
     pub major: u64,
     pub minor: Option<u64>,
@@ -181,6 +181,48 @@ impl PartialOrd for Version {
 impl Ord for Version {
     fn cmp(&self, other: &Self) -> Ordering {
         self.precedence_cmp(other)
+    }
+}
+
+impl fmt::Display for VersionReq {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.comparators.len() == 1 {
+            write!(f, "{}", self.comparators[0])
+        } else {
+            let comparator_strs: Vec<String> = self.comparators.iter().map(|c| c.to_string()).collect();
+            write!(f, "{}", comparator_strs.join(" "))
+        }
+    }
+}
+
+impl fmt::Display for Comparator {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.op {
+            Op::Exact => write!(f, "{}", self.version),
+            Op::Greater => write!(f, ">{}", self.version),
+            Op::GreaterEq => write!(f, ">={}", self.version),
+            Op::Less => write!(f, "<{}", self.version),
+            Op::LessEq => write!(f, "<={}", self.version),
+            Op::Tilde => write!(f, "~{}", self.version),
+            Op::Caret => write!(f, "^{}", self.version),
+            Op::Wildcard => write!(f, "*"),
+        }
+    }
+}
+
+impl fmt::Display for PartialVersion {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.major)?;
+        if let Some(minor) = self.minor {
+            write!(f, ".{}", minor)?;
+            if let Some(patch) = self.patch {
+                write!(f, ".{}", patch)?;
+            }
+        }
+        if let Some(ref pre) = self.prerelease {
+            write!(f, "-{}", pre)?;
+        }
+        Ok(())
     }
 }
 

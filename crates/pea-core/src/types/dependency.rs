@@ -18,6 +18,7 @@ pub struct Dependency {
 
 /// Type of dependency
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Archive, Deserialize, Serialize)]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub enum DependencyKind {
     /// Normal runtime dependency
     Normal,
